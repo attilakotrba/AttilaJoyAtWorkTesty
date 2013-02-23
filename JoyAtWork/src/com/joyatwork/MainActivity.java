@@ -1,0 +1,315 @@
+package com.joyatwork;
+
+import com.joyatwork.util.SystemUiHider;
+
+import android.annotation.TargetApi;
+import android.app.Activity;
+import android.content.Intent;
+import android.os.Build;
+import android.os.Bundle;
+import android.os.Handler;
+import android.view.GestureDetector;
+import android.view.GestureDetector.OnGestureListener;
+import android.view.Gravity;
+import android.view.LayoutInflater;
+import android.view.MotionEvent;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.ImageView;
+import android.widget.TextView;
+import android.widget.Toast;
+
+/**
+ * An example full-screen activity that shows and hides the system UI (i.e.
+ * status bar and navigation/system bar) with user interaction.
+ * 
+ * @see SystemUiHider
+ */
+/*
+<uses-library android:name="com.google.android.maps" />
+*/
+public class MainActivity extends Activity implements OnGestureListener {
+
+	private GestureDetector gestureDetector;
+
+	/**
+	 * Whether or not the system UI should be auto-hidden after
+	 * {@link #AUTO_HIDE_DELAY_MILLIS} milliseconds.
+	 */
+	private static final boolean AUTO_HIDE = false;
+
+	/**
+	 * If {@link #AUTO_HIDE} is set, the number of milliseconds to wait after
+	 * user interaction before hiding the system UI.
+	 */
+	private static final int AUTO_HIDE_DELAY_MILLIS = 3000;
+
+	/**
+	 * If set, will toggle the system UI visibility upon interaction. Otherwise,
+	 * will show the system UI visibility upon interaction.
+	 */
+	private static final boolean TOGGLE_ON_CLICK = true;
+
+	/**
+	 * The flags to pass to {@link SystemUiHider#getInstance}.
+	 */
+	private static final int HIDER_FLAGS = SystemUiHider.FLAG_HIDE_NAVIGATION;
+
+	/**
+	 * The instance of the {@link SystemUiHider} for this activity.
+	 */
+	private SystemUiHider mSystemUiHider;
+
+	private static final int _VerticalSwipeDiff = 100;
+	private static final int _HorizontalSwipeDiff = 100;
+	
+	@Override
+	protected void onCreate(Bundle savedInstanceState) {
+		super.onCreate(savedInstanceState);
+
+		setContentView(R.layout.activity_main);
+
+		// final View controlsView =
+		// findViewById(R.id.fullscreen_content_controls);
+		// final View contentView = findViewById(R.id.fullscreen_content);
+		//
+		// // Set up an instance of SystemUiHider to control the system UI for
+		// // this activity.
+		// mSystemUiHider = SystemUiHider.getInstance(this, contentView,
+		// HIDER_FLAGS);
+		// mSystemUiHider.setup();
+		// mSystemUiHider
+		// .setOnVisibilityChangeListener(new
+		// SystemUiHider.OnVisibilityChangeListener() {
+		// // Cached values.
+		// int mControlsHeight;
+		// int mShortAnimTime;
+		//
+		// @Override
+		// @TargetApi(Build.VERSION_CODES.HONEYCOMB_MR2)
+		// public void onVisibilityChange(boolean visible) {
+		// if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB_MR2) {
+		// // If the ViewPropertyAnimator API is available
+		// // (Honeycomb MR2 and later), use it to animate the
+		// // in-layout UI controls at the bottom of the
+		// // screen.
+		// if (mControlsHeight == 0) {
+		// mControlsHeight = controlsView.getHeight();
+		// }
+		// if (mShortAnimTime == 0) {
+		// mShortAnimTime = getResources().getInteger(
+		// android.R.integer.config_shortAnimTime);
+		// }
+		// controlsView
+		// .animate()
+		// .translationY(visible ? 0 : mControlsHeight)
+		// .setDuration(mShortAnimTime);
+		// } else {
+		// // If the ViewPropertyAnimator APIs aren't
+		// // available, simply show or hide the in-layout UI
+		// // controls.
+		// controlsView.setVisibility(visible ? View.VISIBLE
+		// : View.GONE);
+		// }
+		//
+		// if (visible && AUTO_HIDE) {
+		// // Schedule a hide().
+		// delayedHide(AUTO_HIDE_DELAY_MILLIS);
+		// }
+		// }
+		// });
+		//
+		// // Set up the user interaction to manually show or hide the system
+		// UI.
+		// contentView.setOnClickListener(new View.OnClickListener() {
+		// @Override
+		// public void onClick(View view) {
+		// if (TOGGLE_ON_CLICK) {
+		// mSystemUiHider.toggle();
+		// } else {
+		// mSystemUiHider.show();
+		// }
+		// }
+		// });
+
+		// Upon interacting with UI controls, delay any scheduled hide()
+		// operations to prevent the jarring behavior of controls going away
+		// while interacting with the UI.
+		// findViewById(R.id.dummy_button).setOnTouchListener(
+		// mDelayHideTouchListener);
+
+		// Gesture detection
+		gestureDetector = new GestureDetector(this);
+
+	}
+
+	@Override
+	protected void onPostCreate(Bundle savedInstanceState) {
+		super.onPostCreate(savedInstanceState);
+
+		// Trigger the initial hide() shortly after the activity has been
+		// created, to briefly hint to the user that UI controls
+		// are available.
+		// delayedHide(100);
+	}
+
+	/**
+	 * Touch listener to use for in-layout UI controls to delay hiding the
+	 * system UI. This is to prevent the jarring behavior of controls going away
+	 * while interacting with activity UI.
+	 */
+
+	//
+	// View.OnTouchListener mDelayHideTouchListener = new View.OnTouchListener()
+	// {
+	// @Override
+	// public boolean onTouch(View view, MotionEvent motionEvent) {
+	// if (AUTO_HIDE) {
+	// delayedHide(AUTO_HIDE_DELAY_MILLIS);
+	// }
+	//
+	// //return false;
+	// return gestureDetector.onTouchEvent(motionEvent);
+	// }
+	// };
+
+	// Handler mHideHandler = new Handler();
+	// Runnable mHideRunnable = new Runnable() {
+	// @Override
+	// public void run() {
+	// mSystemUiHider.hide();
+	// }
+	// };
+	//
+	// /**
+	// * Schedules a call to hide() in [delay] milliseconds, canceling any
+	// * previously scheduled calls.
+	// */
+	// private void delayedHide(int delayMillis) {
+	// mHideHandler.removeCallbacks(mHideRunnable);
+	// mHideHandler.postDelayed(mHideRunnable, delayMillis);
+	// }
+
+	@Override
+	public boolean onDown(MotionEvent arg0) {
+
+		// TODO Auto-generated method stub
+
+		return false;
+
+	}
+
+	@Override
+	public boolean onFling(MotionEvent start, MotionEvent finish,
+			float xVelocity, float yVelocity) {
+		// Velocity je rychlos pixelov za sekundu
+		
+		
+		float diffVert = start.getY() - finish.getY();
+		float diffHoriz = start.getX() - finish.getX();
+
+		// if (start.getRawY() < finish.getRawY()) {
+		if (diffVert < 0) {
+
+			((ImageView) findViewById(R.id.image_place_holder))
+					.setImageResource(R.drawable.down);
+
+		} else { //Up
+
+			((ImageView) findViewById(R.id.image_place_holder))
+					.setImageResource(R.drawable.up);
+			
+			
+			if (Math.abs(diffVert) > _VerticalSwipeDiff) {
+				Intent go = new Intent(this, TopActivity.class);
+				startActivity(go);
+			}
+
+		}
+
+		// Left swipe
+		if (diffHoriz > _HorizontalSwipeDiff && Math.abs(xVelocity) > 100) {
+			Toast t = Toast.makeText(this.getApplicationContext(),
+					"Left swipe", Toast.LENGTH_LONG);
+			t.setGravity(Gravity.CENTER | Gravity.LEFT, 0, 0);
+			t.show();
+
+//			int sdk = android.os.Build.VERSION.SDK_INT;
+//			if (sdk > android.os.Build.VERSION_CODES.HONEYCOMB) {
+//				// Intent go = new Intent("com.joyatwork.LeftActivity");
+//				Intent go = new Intent(this, LeftActivity.class);
+//				startActivity(go);
+//			}
+//			else {
+				Intent go = new Intent(this, LeftActivityBeforeHoneycomb.class);
+				startActivity(go);
+//			}
+		}
+
+		// Right swipe
+		// Velocity je rychlos pixelov za sekundu
+		else if (diffHoriz < -1* _HorizontalSwipeDiff && Math.abs(xVelocity) > 100) {
+			LayoutInflater inflater = getLayoutInflater();
+			View toastLayout = inflater.inflate(R.layout.toast_view,
+					(ViewGroup) findViewById(R.id.toast_layout_root));
+
+			TextView tvToDraw = (TextView) toastLayout
+					.findViewById(R.id.toast_layout_text);
+			tvToDraw.setText("Toto je custom toast");
+
+			Toast t = new Toast(getApplicationContext());
+			t.setGravity(Gravity.CENTER, 0, 0);
+			t.setDuration(Toast.LENGTH_LONG);
+			t.setView(toastLayout);
+			t.show();
+			// Intent go = new Intent("test.apps.FLORA");
+			// startActivity(go);
+			
+			
+			Intent go = new Intent(this, RithtActivity.class);
+			startActivity(go);
+		}
+
+		return true;
+
+	}
+
+	@Override
+	public void onLongPress(MotionEvent arg0) {
+
+		// TODO Auto-generated method stub
+
+	}
+
+	@Override
+	public boolean onScroll(MotionEvent arg0, MotionEvent arg1, float arg2,
+			float arg3) {
+
+		// TODO Auto-generated method stub
+
+		return false;
+
+	}
+
+	@Override
+	public void onShowPress(MotionEvent arg0) {
+
+		// TODO Auto-generated method stub
+
+	}
+
+	@Override
+	public boolean onSingleTapUp(MotionEvent arg0) {
+
+		// TODO Auto-generated method stub
+
+		return false;
+
+	}
+
+	@Override
+	public boolean onTouchEvent(MotionEvent me) {
+		return gestureDetector.onTouchEvent(me);
+	}
+
+}

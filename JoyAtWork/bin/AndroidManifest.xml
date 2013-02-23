@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="com.joyatwork"
+    android:versionCode="1"
+    android:versionName="1.0" >
+
+      <!--google maps -->
+       <permission
+          android:name="com.joyatwork.permission.MAPS_RECEIVE"
+          android:protectionLevel="signature"/>
+        <uses-permission android:name="com.joyatwork.permission.MAPS_RECEIVE"/>
+        
+        
+    <uses-sdk
+        android:minSdkVersion="10"
+        android:targetSdkVersion="10" />
+
+    <uses-permission android:name="android.permission.ACCESS_MOCK_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_GPS" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
+    
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.READ_CONTACTS" />
+    <!--google maps -->
+    <uses-permission android:name="android.permission.INTERNET" />
+
+    <!--google maps -->
+    <uses-permission android:name="com.google.android.providers.gsf.permission.READ_GSERVICES"/>
+    <!-- External storage for caching. google maps -->
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
+    
+    
+  
+        <!-- Maps API needs OpenGL ES 2.0. -->
+        <uses-feature
+  android:glEsVersion="0x00020000"
+  android:required="true"/>
+        
+        
+    <application
+        android:allowBackup="true"
+        android:icon="@drawable/ic_launcher"
+        android:label="@string/app_name"
+        android:theme="@style/AppTheme" >
+         <!--google maps -->
+        <meta-data
+    android:name="com.google.android.maps.v2.API_KEY"
+    android:value="AIzaSyDmP1GUs5TifulCEzoiB2WRn1yNcukb78g"/>
+        
+        
+
+        <activity
+            android:name="com.joyatwork.LoadingActivity"
+            android:configChanges="orientation|keyboardHidden|screenSize"
+            android:label="@string/app_name"
+            android:theme="@style/FullscreenTheme" >
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+        <activity
+            android:name="com.joyatwork.MainActivity"
+            android:configChanges="orientation|keyboardHidden|screenSize"
+            android:label="@string/title_activity_main"
+            android:theme="@style/FullscreenTheme" >
+        </activity>
+        <activity
+            android:name="com.joyatwork.LeftActivity"
+            android:label="@string/title_activity_left" >
+        </activity>
+        <activity
+            android:name="com.joyatwork.LeftActivityBeforeHoneycomb"
+            android:label="@string/title_activity_left_activity_before_honeycomb" >
+        </activity>
+        <activity
+            android:name="com.joyatwork.RithtActivity"
+            android:label="@string/title_activity_ritht" >
+        </activity>
+        <activity
+            android:name="com.joyatwork.TopActivity"
+            android:label="@string/title_activity_top" >
+        </activity>
+        <activity
+            android:name="com.joyatwork.GoogleMapsActivity"
+            android:label="@string/title_activity_google_maps" >
+        </activity>
+        <activity
+            android:name="com.joyatwork.GoogleMapsV2Activity"
+            android:label="@string/title_activity_google_maps_v2" >
+        </activity>
+        
+       
+        
+    </application>
+
+</manifest>

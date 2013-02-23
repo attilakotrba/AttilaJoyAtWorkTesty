@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+  android:layout_width="match_parent"
+  android:layout_height="match_parent"
+  android:orientation="vertical">
+  
+
+    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+  android:layout_width="match_parent"
+  android:layout_height="120dp"
+  android:orientation="vertical">
+    
+  <fragment 
+      class="com.joyatwork.GoogleMapsSavedRoutesListFragment"
+       android:id="@+id/myfragment"
+       android:layout_width="wrap_content"
+       android:layout_height="0dp"
+       />
+  
+  <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+  android:layout_width="match_parent"
+  android:layout_height="wrap_content"
+  android:orientation="horizontal">
+    
+      <Button
+        android:id="@+id/sydney"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:onClick="onGoToSydney"
+        android:textSize="10sp"
+        android:text="go_to_sydney"/>
+        <Button
+        android:id="@+id/get_address"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:onClick="onGetAddressAsync"
+        android:textSize="10sp"
+        android:text="get_address"/>
+     <Button
+        android:id="@+id/get_Location"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:onClick="onGetLocationAsync"
+        android:textSize="10sp"
+        android:text="get_location"/>
+   </LinearLayout>
+        
+      <TextView android:id="@+id/address"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textSize="12sp" />
+         <TextView android:id="@+id/location"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textSize="12sp" />
+         
+   </LinearLayout>
+     
+  <fragment xmlns:android="http://schemas.android.com/apk/res/android"
+  android:id="@+id/map"
+  android:layout_width="match_parent"
+  android:layout_height="match_parent"
+  class="com.google.android.gms.maps.SupportMapFragment"/>
+
+  
+  </LinearLayout>
