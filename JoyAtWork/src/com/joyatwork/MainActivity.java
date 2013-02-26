@@ -1,13 +1,34 @@
 package com.joyatwork;
 
+import java.io.BufferedInputStream;
+import java.io.BufferedReader;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.URL;
+
+import org.apache.http.HttpResponse;
+import org.apache.http.HttpStatus;
+import org.apache.http.StatusLine;
+import org.apache.http.client.ClientProtocolException;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.impl.client.DefaultHttpClient;
+
 import com.joyatwork.util.SystemUiHider;
 
 import android.annotation.TargetApi;
 import android.app.Activity;
 import android.content.Intent;
+import android.location.Location;
+import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.Message;
 import android.view.GestureDetector;
 import android.view.GestureDetector.OnGestureListener;
 import android.view.Gravity;
@@ -26,8 +47,8 @@ import android.widget.Toast;
  * @see SystemUiHider
  */
 /*
-<uses-library android:name="com.google.android.maps" />
-*/
+ * <uses-library android:name="com.google.android.maps" />
+ */
 public class MainActivity extends Activity implements OnGestureListener {
 
 	private GestureDetector gestureDetector;
@@ -62,7 +83,9 @@ public class MainActivity extends Activity implements OnGestureListener {
 
 	private static final int _VerticalSwipeDiff = 100;
 	private static final int _HorizontalSwipeDiff = 100;
-	
+
+	private static Handler _geoCodingTestHandler;
+
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -141,6 +164,28 @@ public class MainActivity extends Activity implements OnGestureListener {
 		// Gesture detection
 		gestureDetector = new GestureDetector(this);
 
+		_geoCodingTestHandler = new Handler() {
+			public void handleMessage(Message msg) {
+				int i = 4;
+				
+				String[] data = (String[])msg.obj;
+				
+				String retVal1 = GeoNamesXmlResponseParser.ParseFindNearbyStreetsOSMResponse(data[0]);
+				String retVal2 = GeoNamesXmlResponseParser.ParsefindNearbyPlaceNameResponse(data[1]);
+				
+				String finalAddress = retVal1 + ", " + retVal2;
+				i = 4;
+			}
+		};
+		// Try http request
+		GeoNamesHttpReverseGeocodingTask t = new GeoNamesHttpReverseGeocodingTask();
+
+		Location location = new Location("new");
+		location.setLatitude(GoogleMapsV2Activity._geoBratislava2.latitude);
+		location.setLongitude(GoogleMapsV2Activity._geoBratislava2.longitude);
+
+		t.execute(new Location[] { location });
+
 	}
 
 	@Override
@@ -203,8 +248,7 @@ public class MainActivity extends Activity implements OnGestureListener {
 	public boolean onFling(MotionEvent start, MotionEvent finish,
 			float xVelocity, float yVelocity) {
 		// Velocity je rychlos pixelov za sekundu
-		
-		
+
 		float diffVert = start.getY() - finish.getY();
 		float diffHoriz = start.getX() - finish.getX();
 
@@ -214,12 +258,11 @@ public class MainActivity extends Activity implements OnGestureListener {
 			((ImageView) findViewById(R.id.image_place_holder))
 					.setImageResource(R.drawable.down);
 
-		} else { //Up
+		} else { // Up
 
 			((ImageView) findViewById(R.id.image_place_holder))
 					.setImageResource(R.drawable.up);
-			
-			
+
 			if (Math.abs(diffVert) > _VerticalSwipeDiff) {
 				Intent go = new Intent(this, TopActivity.class);
 				startActivity(go);
@@ -234,21 +277,22 @@ public class MainActivity extends Activity implements OnGestureListener {
 			t.setGravity(Gravity.CENTER | Gravity.LEFT, 0, 0);
 			t.show();
 
-//			int sdk = android.os.Build.VERSION.SDK_INT;
-//			if (sdk > android.os.Build.VERSION_CODES.HONEYCOMB) {
-//				// Intent go = new Intent("com.joyatwork.LeftActivity");
-//				Intent go = new Intent(this, LeftActivity.class);
-//				startActivity(go);
-//			}
-//			else {
-				Intent go = new Intent(this, LeftActivityBeforeHoneycomb.class);
-				startActivity(go);
-//			}
+			// int sdk = android.os.Build.VERSION.SDK_INT;
+			// if (sdk > android.os.Build.VERSION_CODES.HONEYCOMB) {
+			// // Intent go = new Intent("com.joyatwork.LeftActivity");
+			// Intent go = new Intent(this, LeftActivity.class);
+			// startActivity(go);
+			// }
+			// else {
+			Intent go = new Intent(this, LeftActivityBeforeHoneycomb.class);
+			startActivity(go);
+			// }
 		}
 
 		// Right swipe
 		// Velocity je rychlos pixelov za sekundu
-		else if (diffHoriz < -1* _HorizontalSwipeDiff && Math.abs(xVelocity) > 100) {
+		else if (diffHoriz < -1 * _HorizontalSwipeDiff
+				&& Math.abs(xVelocity) > 100) {
 			LayoutInflater inflater = getLayoutInflater();
 			View toastLayout = inflater.inflate(R.layout.toast_view,
 					(ViewGroup) findViewById(R.id.toast_layout_root));
@@ -264,8 +308,7 @@ public class MainActivity extends Activity implements OnGestureListener {
 			t.show();
 			// Intent go = new Intent("test.apps.FLORA");
 			// startActivity(go);
-			
-			
+
 			Intent go = new Intent(this, RithtActivity.class);
 			startActivity(go);
 		}
@@ -310,6 +353,123 @@ public class MainActivity extends Activity implements OnGestureListener {
 	@Override
 	public boolean onTouchEvent(MotionEvent me) {
 		return gestureDetector.onTouchEvent(me);
+	}
+
+	public class GeoNamesHttpReverseGeocodingTask extends
+			AsyncTask<Location, Void, String[]> {
+
+		public GeoNamesHttpReverseGeocodingTask() {
+			super();
+		}
+
+		@Override
+		protected String[] doInBackground(Location... params) {
+
+			Location loc = params[0];
+
+			// http://api.geonames.org/findNearbyStreetsOSM?lat=48.14660&lng=17.10635&username=demo
+			String uriStreet = "http://api.geonames.org/findNearbyStreetsOSM?lat=%s&lng=%s&username=joyatwork";			
+			uriStreet = String.format(uriStreet, loc.getLatitude(), loc.getLongitude());
+
+			// http://api.geonames.org/findNearbyPlaceName?lat=48.14660&lng=17.10635&username=demo
+			String uriCity = "http://api.geonames.org/findNearbyPlaceName?lat=%s&lng=%s&username=joyatwork";			
+			uriCity = String.format(uriCity, loc.getLatitude(), loc.getLongitude());
+						
+			String responseStringStreet = null;
+			String responseStringCity = null;
+			
+			
+			
+//			// Pozor, tento kod je z namespace org.apache, co asi nebude
+//			// najlepsie
+//			HttpClient httpclient = new DefaultHttpClient();
+//			HttpResponse response;
+//			try {
+//				response = httpclient.execute(new HttpGet(uri));
+//				StatusLine statusLine = response.getStatusLine();
+//				if (statusLine.getStatusCode() == HttpStatus.SC_OK) {
+//					ByteArrayOutputStream out = new ByteArrayOutputStream();
+//					response.getEntity().writeTo(out);
+//					out.close();
+//					responseString = out.toString();
+//				} else {
+//					// Closes the connection.
+//					response.getEntity().getContent().close();
+//					throw new IOException(statusLine.getReasonPhrase());
+//				}
+//			} catch (ClientProtocolException e) {
+//				// TODO Handle problems..
+//			} catch (IOException e) {
+//				// TODO Handle problems..
+//			}
+//
+//			// To iste skusim cez Java connections
+//			// http://developer.android.com/reference/java/net/HttpURLConnection.html
+//			// Vratit Mesto, stat
+//			// http://api.geonames.org/findNearbyPlaceName?lat=48.14660&lng=17.10635&username=demo
+//			responseString = "";
+//			
+			
+			
+			URL requestUrl;
+			HttpURLConnection urlConnection = null;
+			try {
+				requestUrl = new URL(uriStreet);
+				urlConnection = (HttpURLConnection) requestUrl.openConnection();
+				InputStream in = new BufferedInputStream(urlConnection.getInputStream());
+								
+				responseStringStreet = readStream(in);
+				
+				
+				requestUrl = new URL(uriCity);
+				urlConnection = (HttpURLConnection) requestUrl.openConnection();
+				in = new BufferedInputStream(urlConnection.getInputStream());
+								
+				responseStringCity = readStream(in);
+
+			} catch (MalformedURLException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} finally {
+				if (urlConnection != null) {
+					urlConnection.disconnect();
+				}
+			}
+
+			String[] retVal = new String[] {responseStringStreet, responseStringCity};
+			// Test spustim handler
+			Message m = Message.obtain(_geoCodingTestHandler, 1, retVal);
+			m.sendToTarget();
+
+			return retVal;
+		}
+
+		private String readStream(InputStream in) {
+			String retVal = "";
+			BufferedReader bufReader = new BufferedReader(new InputStreamReader(in));
+			String inputLine = "";
+			try {
+				while ((inputLine = bufReader.readLine()) != null) 
+					 retVal  += inputLine;
+				in.close();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		    return retVal;
+		}
+		
+		
+		// Udalost po ukonceni processingu tasku...
+		@Override
+		protected void onPostExecute(String[] result) {
+			super.onPostExecute(result);
+			// Do anything with response..
+		}
+
 	}
 
 }

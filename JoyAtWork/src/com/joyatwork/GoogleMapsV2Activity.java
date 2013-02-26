@@ -1,10 +1,19 @@
 package com.joyatwork;
 
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
+
+import org.apache.http.HttpResponse;
+import org.apache.http.HttpStatus;
+import org.apache.http.StatusLine;
+import org.apache.http.client.ClientProtocolException;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.impl.client.DefaultHttpClient;
 
 
 import com.google.android.gms.maps.CameraUpdateFactory;
@@ -46,7 +55,7 @@ public class GoogleMapsV2Activity extends /*Activity */
 
 	public float _defaultZoomLevel = 16.5f;
 	public LatLng _geoBratislava = new LatLng(48.146661,17.107126);
-	public LatLng _geoBratislava2 = new LatLng(48.14660,17.10635);
+	public static final LatLng _geoBratislava2 = new LatLng(48.14660,17.10635);
 	
 	public CameraPosition _cpBratislava = new CameraPosition.Builder().target(_geoBratislava)
 			//.zoom(5.5f)
@@ -427,6 +436,58 @@ public class GoogleMapsV2Activity extends /*Activity */
    Context mContext;
 
    public GeocodingTask(Context context) {
+       super();
+       mContext = context;
+   }
+
+   @Override
+   protected Void doInBackground(String... params) {
+       Geocoder geocoder = new Geocoder(mContext, Locale.getDefault());
+
+       String str = params[0];
+       List<Address> addresses = null;
+       try {
+           // Call the synchronous getFromLocation() method by passing in the lat/long values.
+           addresses = geocoder.getFromLocationName(str, 1);           
+       } catch (IOException e) {
+           e.printStackTrace();
+           // Update UI field with the exception.
+           //Message.obtain(mHandler, UPDATE_ADDRESS, e.toString()).sendToTarget();
+       }
+       if (addresses != null && addresses.size() > 0) {
+           Address address = addresses.get(0);
+           // Format the first line of address (if available), city, and country name.
+           String addressText = String.format("%s, %s",
+                   address.getLatitude(),
+                   address.getLongitude());
+           // Update the UI via a message handler.
+           Message.obtain(mGeoHandler, UPDATE_ADDRESS, addressText).sendToTarget();
+       }
+       return null;
+   }
+  }
+  
+  
+  
+  
+  
+
+  
+
+  
+  
+  
+  
+
+  
+  
+  
+  
+  //http://www.geonames.org/export/ws-overview.html
+  private class GeoNamesHttpGeocodingTask extends AsyncTask<String, Void, Void> {
+   Context mContext;
+
+   public GeoNamesHttpGeocodingTask(Context context) {
        super();
        mContext = context;
    }
